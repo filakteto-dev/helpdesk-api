@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password, create_access_token
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserCreate
 from app.models.user import User
@@ -29,3 +29,20 @@ class AuthService:
             username=user_data.username,
             hashed_password=hashed_password,
         )
+
+    def login_user(self, email: str, password: str) -> str:
+        user = self.user_repository.get_by_email(email)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            )
+
+        if not verify_password(password, user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials",
+            )
+
+        return create_access_token(subject=user.email)
