@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Ticket
@@ -18,3 +19,11 @@ class TicketService:
 
     def get_my_tickets(self, owner_id: int) -> list[Ticket]:
         return self.ticket_repository.get_by_owner_id(owner_id)
+
+    def get_my_ticket(self, ticket_id: int, owner_id: int) -> Ticket:
+        ticket = self.ticket_repository.get_by_id(ticket_id)
+        if not ticket or ticket.owner_id != owner_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Ticket not found")
+        return ticket

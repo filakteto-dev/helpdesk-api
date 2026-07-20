@@ -21,8 +21,8 @@ def create_ticket(
 ):
     ticket_service = TicketService(db)
     ticket = ticket_service.create_ticket(
-        ticket_data = ticket_data,
-        owner_id=current_user.id
+        ticket_data=ticket_data,
+        owner_id=current_user.id,
     )
     return ticket
 
@@ -39,5 +39,19 @@ def get_my_tickets(
     tickets = ticket_service.get_my_tickets(owner_id=current_user.id)
     return tickets
 
-
-
+@router.get(
+    "/{ticket_id}",
+    response_model=TicketRead,
+    status_code=status.HTTP_200_OK,
+)
+def get_my_ticket(
+        ticket_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    ticket_service = TicketService(db)
+    ticket = ticket_service.get_my_ticket(
+        ticket_id=ticket_id,
+        owner_id=current_user.id,
+    )
+    return ticket
