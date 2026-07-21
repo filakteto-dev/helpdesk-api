@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.models import Ticket
+from app.models import Ticket, TicketStatus, User, UserRole
 from app.repositories.ticket_repository import TicketRepository
 from app.schemas.ticket import TicketCreate
 
@@ -25,5 +25,28 @@ class TicketService:
         if not ticket or ticket.owner_id != owner_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Ticket not found")
+                detail="Ticket not found"
+            )
         return ticket
+
+    def update_ticket_status(
+            self,
+            ticket_id: int,
+            new_status: TicketStatus,
+            current_user: User,
+    ) -> Ticket:
+        if current_user.role not in (UserRole.SUPPORT, UserRole.ADMIN):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+
+        ticket = self.ticket_repository.get_by_id(ticket_id)
+
+        if not ticket:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Ticket not found",
+            )
+
+        return self.ticket_repository.update_status(ticket, new_status)

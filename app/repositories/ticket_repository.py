@@ -34,3 +34,10 @@ class TicketRepository:
     def get_by_owner_id(self, owner_id: int) -> list[Ticket]:
         stmt = select(Ticket).where(Ticket.owner_id == owner_id)
         return list(self.db.execute(stmt).scalars().all())
+
+    def update_status(self, ticket: Ticket, status: TicketStatus) -> Ticket:
+        ticket.status = status
+        self.db.commit()
+        self.db.refresh(ticket)
+
+        return ticket

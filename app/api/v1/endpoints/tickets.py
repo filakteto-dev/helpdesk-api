@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.dependencies.auth import get_current_user
 from app.models import User
-from app.schemas.ticket import TicketRead, TicketCreate
+from app.schemas.ticket import TicketRead, TicketCreate, TicketStatusUpdate
 from app.services.ticket_service import TicketService
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
@@ -53,5 +53,24 @@ def get_my_ticket(
     ticket = ticket_service.get_my_ticket(
         ticket_id=ticket_id,
         owner_id=current_user.id,
+    )
+    return ticket
+
+@router.patch(
+    "/{ticket_id}/status",
+    response_model=TicketRead,
+    status_code=status.HTTP_200_OK,
+)
+def update_ticket_status(
+        ticket_id: int,
+        status_data: TicketStatusUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user),
+):
+    ticket_service = TicketService(db)
+    ticket = ticket_service.update_ticket_status(
+        ticket_id=ticket_id,
+        new_status=status_data.status,
+        current_user=current_user,
     )
     return ticket
