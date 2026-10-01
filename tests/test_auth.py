@@ -1,62 +1,19 @@
-import pytest
-
-#region Test data
-
 VALID_USER_DATA = {
     "email": "alice@example.com",
     "username": "alice",
     "password": "very-strong-password",
 }
 
-INVALID_EMAIL_USER_DATA = {
-    "email": "not-an-email",
-    "username": "alice",
-    "password": "very-strong-password",
-}
-
-UNKNOWN_EMAIL_USER_DATA = {
-    "email": "unknown@example.com",
-    "username": "alice",
-    "password": "very-strong-password",
-}
-
-#endregion
-
-@pytest.fixture
-def registered_user(client):
-    response = client.post(
-        "/auth/register",
-        json=VALID_USER_DATA,
-    )
-
-    assert response.status_code == 201
-
-    return VALID_USER_DATA.copy()
-
-
-@pytest.fixture
-def auth_headers(client, registered_user):
-    login_response = client.post(
-        "/auth/login",
-        data={
-            "username": registered_user["email"],
-            "password": registered_user["password"],
-        }
-    )
-
-    assert login_response.status_code == 200
-
-    access_token = login_response.json()["access_token"]
-
-    return {
-        "Authorization": f"Bearer {access_token}",
-    }
 
 
 def test_register_rejects_invalid_email(client):
     response = client.post(
         "/auth/register",
-        json=INVALID_EMAIL_USER_DATA,
+        json={
+            "email": "not-a-valid-email",
+            "username": "alice",
+            "password": "very-strong-password",
+        },
     )
 
     response_data = response.json()
@@ -129,9 +86,9 @@ def test_login_user_successfully(client, registered_user):
 
 
 def test_get_current_user_successfully(
-        client,
-        registered_user,
-        auth_headers,
+    client,
+    registered_user,
+    auth_headers,
 ):
 
     me_response = client.get(
@@ -176,8 +133,8 @@ def test_login_rejects_unknown_user(client):
     response = client.post(
         "/auth/login",
         data={
-            "username": UNKNOWN_EMAIL_USER_DATA["email"],
-            "password": UNKNOWN_EMAIL_USER_DATA["password"],
+            "username": "unknown@example.com",
+            "password": "very-strong-password",
         },
     )
 
@@ -194,7 +151,6 @@ def test_login_rejects_wrong_password(client, registered_user):
             "username": registered_user["email"],
             "password": "wrong-password",
         },
-
     )
 
     assert response.status_code == 401

@@ -4,10 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import settings
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
-from app.core.config import settings
 
 
 
@@ -26,6 +26,7 @@ TestingSessionLocal = sessionmaker(
     bind=test_engine,
 )
 
+
 def override_get_db():
     db = TestingSessionLocal()
     try:
@@ -33,10 +34,11 @@ def override_get_db():
     finally:
         db.close()
 
+
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(settings, "SECRET_KEY", TEST_SECRET_KEY)
-    
+
     Base.metadata.create_all(bind=test_engine)
     app.dependency_overrides[get_db] = override_get_db
 
@@ -45,3 +47,41 @@ def client(monkeypatch):
 
     app.dependency_overrides.clear()
     Base.metadata.drop_all(bind=test_engine)
+
+
+@pytest.fixture
+def registered_user(client):
+    user_data = {
+        "email": "alice@example.com",
+        "username": "alice",
+        "password": "very-strong-password",
+    }
+
+    response = client.post(
+        "/auth/register",
+        json=user_data,
+    )
+
+    assert response.status_code == 201
+
+    return user_data
+
+
+@pytest.fixture
+def auth_headers(client, registered_user):
+    login_response = client.post(
+        "/auth/login",
+        data={
+            "username": registered_user["email"],
+            "password": registered_user["password"],
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    access_token = login_response.json()["access_token"]
+
+    return {
+        "Authorization": f"Bearer {access_token}",
+    }
+
