@@ -14,6 +14,12 @@ INVALID_EMAIL_USER_DATA = {
     "password": "very-strong-password",
 }
 
+UNKNOWN_EMAIL_USER_DATA = {
+    "email": "unknown@example.com",
+    "username": "alice",
+    "password": "very-strong-password",
+}
+
 #endregion
 
 @pytest.fixture
@@ -163,4 +169,35 @@ def test_get_current_user_rejects_invalid_token(client):
     assert response.status_code == 401
     assert response.json() == {
         "detail": "Could not validate credentials",
+    }
+
+
+def test_login_rejects_unknown_user(client):
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": UNKNOWN_EMAIL_USER_DATA["email"],
+            "password": UNKNOWN_EMAIL_USER_DATA["password"],
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "Invalid credentials",
+    }
+
+
+def test_login_rejects_wrong_password(client, registered_user):
+    response = client.post(
+        "/auth/login",
+        data={
+            "username": registered_user["email"],
+            "password": "wrong-password",
+        },
+
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "Invalid credentials",
     }
