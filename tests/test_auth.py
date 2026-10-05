@@ -1,3 +1,8 @@
+import jwt
+
+from app.core.config import settings
+from app.core.security import create_access_token
+
 VALID_USER_DATA = {
     "email": "alice@example.com",
     "username": "alice",
@@ -156,4 +161,42 @@ def test_login_rejects_wrong_password(client, registered_user):
     assert response.status_code == 401
     assert response.json() == {
         "detail": "Invalid credentials",
+    }
+
+
+def test_get_current_user_rejects_token_without_subject(client):
+    token = jwt.encode(
+        {"role": "user"},
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    response = client.get(
+        "/auth/me",
+        headers={
+            "Authorization": f"Bearer {token}"
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "Could not validate credentials",
+    }
+
+
+def test_get_current_user_rejects_token_for_unknown_user(client):
+    token = create_access_token(
+        subject="deleted@example.com",
+    )
+
+    response = client.get(
+        "/auth/me",
+        headers={
+            "Authorization": f"Bearer {token}"
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {
+        "detail": "Could not validate credentials",
     }
