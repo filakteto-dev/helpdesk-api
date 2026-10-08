@@ -10,7 +10,6 @@ VALID_USER_DATA = {
 }
 
 
-
 def test_register_rejects_invalid_email(client):
     response = client.post(
         "/auth/register",

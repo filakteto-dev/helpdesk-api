@@ -11,7 +11,6 @@ from app.main import app
 from app.models.user import User, UserRole
 
 
-
 TEST_DATABASE_URL = "sqlite://"
 TEST_SECRET_KEY = "test_secret-key-that-is-longer-than-32-bytes"
 

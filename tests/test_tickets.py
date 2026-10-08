@@ -3,6 +3,7 @@ VALID_TICKET_DATA = {
     "description": "The office Wi-Fi router is on fire",
 }
 
+
 def test_create_ticket_successfully(client, auth_headers):
     response = client.post(
         "/tickets/",
@@ -287,9 +288,9 @@ def test_update_ticket_status_returns_404_for_unknown_ticket(
 
 
 def test_update_ticket_status_rejects_invalid_status(
-        client,
-        auth_headers,
-        support_auth_headers,
+    client,
+    auth_headers,
+    support_auth_headers,
 ):
     create_response = client.post(
         "/tickets/",
