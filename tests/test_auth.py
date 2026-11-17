@@ -50,7 +50,7 @@ def test_register_rejects_duplicate_email(client, registered_user):
         json=registered_user,
     )
 
-    assert second_response.status_code == 400
+    assert second_response.status_code == 409
     assert second_response.json() == {
         "detail": "Email already registered",
     }
@@ -67,7 +67,7 @@ def test_register_rejects_duplicate_username(client, registered_user):
         json=second_user_data,
     )
 
-    assert second_response.status_code == 400
+    assert second_response.status_code == 409
     assert second_response.json() == {
         "detail": "Username already taken",
     }

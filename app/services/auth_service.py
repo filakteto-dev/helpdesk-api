@@ -13,13 +13,13 @@ class AuthService:
     def register_user(self, user_data: UserCreate) -> User:
         if self.user_repository.get_by_email(user_data.email):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered",
             )
 
         if self.user_repository.get_by_username(user_data.username):
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_409_CONFLICT,
                 detail="Username already taken",
             )
         hashed_password = hash_password(user_data.password)
