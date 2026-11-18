@@ -7,7 +7,15 @@ from app.models import User
 from app.schemas.ticket import TicketRead, TicketCreate, TicketStatusUpdate
 from app.services.ticket_service import TicketService
 
-router = APIRouter(prefix="/tickets", tags=["tickets"])
+router = APIRouter(
+    prefix="/tickets",
+    tags=["tickets"],
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {
+            "description": "Not authenticated",
+        },
+    },
+)
 
 @router.post(
     "/",
@@ -43,6 +51,11 @@ def get_my_tickets(
     "/{ticket_id}",
     response_model=TicketRead,
     status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Ticket not found",
+        },
+    },
 )
 def get_my_ticket(
         ticket_id: int,
@@ -60,6 +73,14 @@ def get_my_ticket(
     "/{ticket_id}/status",
     response_model=TicketRead,
     status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_403_FORBIDDEN: {
+            "description": "Not enough permissions",
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "Ticket not found",
+        },
+    },
 )
 def update_ticket_status(
         ticket_id: int,

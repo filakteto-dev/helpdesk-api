@@ -15,6 +15,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     "/register",
     response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_409_CONFLICT: {
+            "description": "Email or username already registered",
+        },
+    },
 )
 def register(user_data: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
     auth_service = AuthService(db)
